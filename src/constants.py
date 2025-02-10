@@ -20,15 +20,18 @@ sig_centos_host_os_path = 'workspace/docs/docs/tdx/host.md'
 sig_centos_guest_os_path = 'workspace/docs/docs/tdx/guest.md'
 
 ## TDX Enabling Guide Host OS page
-tdx_guide_ubuntu24_04_setup_host = "Setup Host OS"
+tdx_guide_ubuntu24_04_setup_host = "Setup Host OS:The host OS setup has been done successfully"
 tdx_guide_centos_stream9_setup_host = "Configure a host"
-tdx_guide_install_msr_tools = "install the MSR Tools package"
-tdx_guide_intel_tme_enabled = "Intel TME is enabled"
-tdx_guide_intel_tme_keys = "Intel TME keys"
-tdx_guide_sgx_mcheck_status = "Intel SGX and MCHECK status"
-tdx_guide_tdx_status = "Intel TDX status"
-tdx_guide_intel_tdx_keys = "Intel TDX keys"
-tdx_guide_multi_commands_list = [tdx_guide_install_msr_tools]
+tdx_guide_module_initialized = "Intel TDX Module is initialized:module initialized"
+tdx_guide_install_msr_tools = "install the MSR Tools package:"
+tdx_guide_intel_tme_enabled = "Intel TME is enabled:1"
+tdx_guide_intel_tme_keys = "Intel TME keys:7f"
+tdx_guide_sgx_mcheck_status = "Intel SGX and MCHECK status:0"
+tdx_guide_tdx_status = "Intel TDX status:1"
+tdx_guide_intel_tdx_keys = "Intel TDX keys:40"
+tdx_guide_intel_sgx_package = "Intel SGX package repository:"
+tdx_guide_install_qgs = "Install the QGS:"
+#tdx_guide_multi_commands_list = [tdx_guide_install_msr_tools]
 
 ## Sig CentOS Host OS page
 sig_tdx_package = "Virt SIG TDX package"
@@ -40,10 +43,12 @@ sig_host = [sig_tdx_package, sig_install_tdx, start_libvirt_service]
 canonical_setup_host = "Run the `setup-tdx-host.sh` script"
 canonical_setup_host_os = [canonical_setup_host]
 
-host_setup_commands = {"tdx_guide_ubuntu24_04_setup_host tdx_guide_centos_stream9_setup_host" : "link", 
+host_setup_commands = {"tdx_guide_ubuntu24_04_setup_host tdx_guide_centos_stream9_setup_host" : "link", \
+                        tdx_guide_module_initialized : "single_command", \
                         tdx_guide_install_msr_tools : "multi_distro", tdx_guide_intel_tme_enabled : "single_command", \
                         tdx_guide_intel_tme_keys : "single_command", tdx_guide_sgx_mcheck_status : "single_command", \
-                        tdx_guide_tdx_status : "single_command", tdx_guide_intel_tdx_keys : "single_command"}
+                        tdx_guide_tdx_status : "single_command", tdx_guide_intel_tdx_keys : "single_command", \
+                        tdx_guide_install_qgs : "multi_distro"}
 
 ## TDX Enabling Guide Guest OS page
 tdx_guide_ubuntu24_04_guest_setup = "Create TD Image"

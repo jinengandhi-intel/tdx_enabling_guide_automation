@@ -10,7 +10,8 @@ def setup():
     if os.path.exists(workspace_path):
         shutil.rmtree(workspace_path)
     os.mkdir(workspace_path)
-    checkout_repo(tdx_enabling_repo, tdx_enabling_repo_branch)
+    #checkout_repo(tdx_enabling_repo, tdx_enabling_repo_branch)
+    os.system("cp -rf /home/sdp/jinen/tdx_enabling_guide_automation/applications.security.confidential-computing.tdx.documentation /home/sdp/jinen/tdx_enabling_guide_automation/workspace")
 
 def test_tdx_enabling_guide_host_setup_ubuntu24_04():
     distro = "Ubuntu 24.04"

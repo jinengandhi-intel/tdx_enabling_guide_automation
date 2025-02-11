@@ -14,6 +14,7 @@ tdx_enabling_guide_hardware_requirements = 'workspace/applications.security.conf
 tdx_enabling_guide_prerequisites = 'workspace/applications.security.confidential-computing.tdx.documentation/docs/child_docs/intel-tdx-enabling-guide/docs/03/prerequisites.md'
 tdx_enabling_guide_introduction = 'workspace/applications.security.confidential-computing.tdx.documentation/docs/child_docs/intel-tdx-enabling-guide/docs/01/introduction.md'
 tdx_enabling_guide_sgx_setup_script = 'workspace/applications.security.confidential-computing.tdx.documentation/docs/child_docs/intel-tdx-enabling-guide/docs/code/sgx_repo_setup.sh'
+tdx_enabling_guide_infrastructure_page = 'workspace/applications.security.confidential-computing.tdx.documentation/docs/child_docs/intel-tdx-enabling-guide/docs/02/infrastructure_setup.md'
 
 # Repository details for Canonical TDX
 canonical_repo = "https://github.com/canonical/tdx.git"
@@ -49,7 +50,7 @@ sig_tdx_package = "Virt SIG TDX package"
 sig_install_tdx = "Install the TDX host packages"
 start_libvirt_service = "Start libvirtd service"
 sig_running_kernel_version = "Running kernel version:`uname -r`" # Here the verifier string is actually is a command which will be executed and the output will be verified.
-sig_tdx_enabled = "TDX is enabled:BIOS enabled\: private KeyID range [64, 128)"
+sig_tdx_enabled = "TDX is enabled:private KeyID range [64, 128)"
 sig_reload_kvm_intel_module = "Reload kvm_intel module:"
 sig_tdx_initialized = "TDX is initialized:module initialized"
 sig_host = [sig_tdx_package, sig_install_tdx, start_libvirt_service, sig_running_kernel_version, 
@@ -115,3 +116,42 @@ sig_configure_and_boot_vm = [sig_centos_launch_td_qemu, sig_centos_td_guest_xml,
 #   read_from_other_file - The command is read from another file
 guest_setup_commands = {"tdx_guide_ubuntu24_04_guest_setup tdx_guide_centos_stream9_guest_setup" : "link", \
                         "tdx_guide_ubuntu24_04_launch_td tdx_guide_centos_stream9_launch_td" : "link"}
+
+# TDX Enabling Infrastructure Setup page commands
+# Format:- search_string:verifier_string
+#   Verifier string is the expected output string when the command is executed.
+#   If there is no clear expected output, provide an empty string and the
+#   framework will look for popular keywords like error.
+tdx_guide_setup_pccs = "setup the PCCS:"
+tdx_guide_install_pccs = "Install PCCS:"
+tdx_guide_verify_pccs = "verify PCCS:" # To-Do need to figure out verification logic.
+tdx_guide_install_mpa = "Install MPA:"
+tdx_guide_verify_mpa_registration = "successful MPA-based registration:PLATFORM_ESTABLISHMENT or TCB_RECOVERY passed successfully"
+tdx_guide_install_pckid_package = "Install PCKCIDRT:"
+tdx_guide_execute_pckid_package = "retrieved from a package repository:"
+tdx_guide_execute_pckid_standalone_package = "retrieved from a package repository:csv has been generated successfully!"
+tdx_guide_extract_pm = "commands to extract the PM:"
+tdx_guide_send_pm_to_pccs = "REST API endpoint of the IRS:"
+
+# Infrastructure setup Online Automatic dictionary
+# Format:- search_string:command_type
+#   Command type can be single_command, multi_distro, link, or read_from_other_file
+#   single_command - The command is a single command
+#   multi_distro - The command is different for different distros
+#   link - The command is a link to another page
+#   read_from_other_file - The command is read from another file
+infrastructure_setup_direct_registration_mpa_commands = {tdx_guide_setup_pccs : "read_from_other_file", tdx_guide_install_pccs : "multi_distro", 
+                                 tdx_guide_verify_pccs : "single_command", tdx_guide_install_mpa : "multi_distro", 
+                                 tdx_guide_verify_mpa_registration : "single_command"}
+
+# Infrastructure setup On-/Offline Manual dictionary
+# Format:- search_string:command_type
+#   Command type can be single_command, multi_distro, link, or read_from_other_file
+#   single_command - The command is a single command
+#   multi_distro - The command is different for different distros
+#   link - The command is a link to another page
+#   read_from_other_file - The command is read from another file
+infrastructure_setup_direct_registration_offline_manual_commands = {tdx_guide_setup_pccs : "read_from_other_file", tdx_guide_install_pccs : "multi_distro", 
+                                                                    tdx_guide_verify_pccs : "single_command", tdx_guide_install_pckid_package : "multi_distro", 
+                                                                    tdx_guide_execute_pckid_package : "multi_distro", tdx_guide_execute_pckid_standalone_package : "multi_distro", 
+                                                                    tdx_guide_extract_pm : "multi_distro", tdx_guide_send_pm_to_pccs : "multi_distro"}

@@ -6,8 +6,6 @@ extracting code blocks from markdown files, running subprocess commands, and mor
 """
 
 import re
-import requests
-import select
 import os
 from src.constants import *
 import subprocess
@@ -88,6 +86,10 @@ def extract_code_block_from_sh(file_path, start_marker, end_marker):
         return match.group(1).strip()
     else:
         return None
+def replace_substrings(command, replacements):
+    for old, new in replacements.items():
+        command = command.replace(old, new)
+    return command
 
 def run_subprocess(command, dest_dir=None, timeout=1200):
     """
@@ -106,31 +108,35 @@ def run_subprocess(command, dest_dir=None, timeout=1200):
     """
     if dest_dir:
         os.chdir(dest_dir)
-    if "\\" in command:
-        print("Starting Process %s from %s" %(command, os.getcwd()))
-        process = subprocess.run(command, stdout=subprocess.PIPE, stderr=subprocess.PIPE,
+    replacements = {
+        "<hostname>": "sdp",
+        "24.10": "24.04"
+    }
+    modified_command = replace_substrings(command, replacements)
+    if "\\" in modified_command:
+        print("Starting Process %s from %s" %(modified_command, os.getcwd()))
+        process = subprocess.run(modified_command, stdout=subprocess.PIPE, stderr=subprocess.PIPE,
                                     universal_newlines=True, shell=True, timeout=timeout)
         if process.returncode != 0:
             print(process.stderr.strip())
-            raise Exception("Failed to run command {}".format(command))
+            raise Exception("Failed to run command {}".format(modified_command))
     else:
-        command_lines = command.splitlines()
-        for command in command_lines:
-            command = command.strip()
-            if command != "bash":
-                if command.startswith("cd"):
-                    print(f"Command {command}")
-                    os.chdir(command.split()[1])
+        command_lines = modified_command.splitlines()
+        for each_command in command_lines:
+            each_command = each_command.strip()
+            if each_command != "bash":
+                if each_command.startswith("cd"):
+                    print(f"Command {each_command}")
+                    os.chdir(each_command.split()[1])
                     print(f"Changed directory to {os.getcwd()}")
                 else:
-                    command = command.replace("24.10", "24.04")
-                    print("Starting Process %s from %s" %(command, os.getcwd()))
-                    process = subprocess.run(command, stdout=subprocess.PIPE, stderr=subprocess.PIPE,
+                    print("Starting Process %s from %s" %(each_command, os.getcwd()))
+                    process = subprocess.run(each_command, stdout=subprocess.PIPE, stderr=subprocess.PIPE,
                                                 universal_newlines=True, shell=True, timeout=timeout)
+                    print(f"Process stdout {process.stdout.strip()}")
                     if process.returncode != 0:
                         print(f"Process stderr {process.stderr.strip()}")
-                        print(f"Process stdout {process.stdout.strip()}")
-                        raise Exception("Failed to run command {}".format(command))
+                        raise Exception("Failed to run command {}".format(each_command))
 
     try:
         if dest_dir: os.chdir(framework_path)
@@ -159,7 +165,7 @@ def extract_code_blocks_after_text(markdown_text, search_text, markdown_type, di
         return []  # Return an empty list if the search text is not found
     text_after_search = markdown_text[search_position + len(search_text):]
     code_blocks = extract_code_blocks(text_after_search)
-    if markdown_type != "multi_distro":
+    if markdown_type != "multi_distro" and markdown_type != "read_from_other_file":
         return code_blocks[0] if code_blocks else None  # Return the first code block if found 
     else:
         if distro == "CentOS Stream 9":
@@ -298,28 +304,26 @@ def run_test(distro, page, commands_dict):
                     if verifier_string.startswith("`"):
                         verifier_string = run_subprocess(verifier_string.strip("`"), workspace_path)
                     if verifier_string not in output:
-                        assert False, f"Verification failed for {command.strip()}"
+                        assert False, f"Verification failed for {command.strip()}. Output doesn't match verifier string."
                 else:
-                    if "error" in output:
-                        assert False, f"Verification failed for {command.strip()}"
+                    if "error" in output or "Error" in output:
+                        assert False, f"Verification failed for {command.strip()}. Output contains keyword error."
         else:
             verifier_string = markdown_string.split(":")[1]
             markdown_string = markdown_string.split(":")[0]
+            command = extract_code_blocks_after_text(file_text, markdown_string, markdown_type, distro)
+            pattern = re.compile(r'\{.*?\}')
+            command = pattern.sub('', command)
+            print(f"Command: {command.strip()}\n")
             if markdown_type == "read_from_other_file":
-                if distro == "Ubuntu 24.04":
-                    start_marker = '# --8<-- [start:ubuntu_24_04]'
-                    end_marker = '# --8<-- [end:ubuntu_24_04]'
-                elif distro == "CentOS Stream 9":
-                    start_marker = '# --8<-- [start:cent-os-stream-9]'
-                    end_marker = '# --8<-- [end:cent-os-stream-9]'
-                else:
-                    start_marker = '# --8<-- [start:opensuse_leap_15_5]'
-                    end_marker = '# --8<-- [end:opensuse_leap_15_5]'
+                sgx_distro = command.split(":")[1]
+                sgx_distro = sgx_distro.strip().strip('"')
+                print(f"SGX Distro: {sgx_distro}")
+                start_marker = f"# --8<-- [start:{sgx_distro}]"
+                end_marker = f"# --8<-- [end:{sgx_distro}]"
+                print(f"Start marker: {start_marker}")
+                print(f"End marker: {end_marker}")
                 command = extract_code_block_from_sh(tdx_enabling_guide_sgx_setup_script, start_marker, end_marker)
-            else:
-                command = extract_code_blocks_after_text(file_text, markdown_string, markdown_type, distro)
-                pattern = re.compile(r'\{.*?\}')
-                command = pattern.sub('', command)
             print(f"#########\nMarkdown string: {markdown_string}")
             print(f"Command: {command.strip()}\n")
             output = run_subprocess(command.strip())
@@ -327,8 +331,10 @@ def run_test(distro, page, commands_dict):
                 print("Command %s output %s" %(command, output))
             if verifier_string != "":
                 print(f"Verifier string {verifier_string}")
+                if verifier_string.startswith("`"):
+                    verifier_string = run_subprocess(verifier_string.strip("`"), workspace_path)
                 if verifier_string not in output:
-                    assert False, f"Verification failed for {command.strip()}"
+                    assert False, f"Verification failed for {command.strip()}. Output doesn't match verifier string."
             else:
-                if "error" in output:
-                    assert False, f"Verification failed for {command.strip()}"
+                if "error" in output or "Error" in output:
+                    assert False, f"Verification failed for {command.strip()}. Output contains keyword error."

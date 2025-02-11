@@ -46,3 +46,17 @@ def test_tdx_enabling_guide_guest_setup_centos_stream9():
     distro = "CentOS Stream 9"
     run_test(distro, tdx_enabling_guide_guest_os_page, guest_setup_commands)
 
+def test_tdx_enabling_infrastructure_setup_direct_registration_online_automatic_ubuntu24_04():
+    """
+    Test the TDX enabling guide for infrastructure setup Direct Registration online automatic on Ubuntu 24.04.
+    """
+    distro = "Ubuntu 24.04"
+    run_test(distro, tdx_enabling_guide_infrastructure_page, infrastructure_setup_direct_registration_mpa_commands)
+
+def test_tdx_enabling_infrastructure_setup_direct_registration_on_offline_manual_ubuntu24_04():
+    """
+    Test the TDX enabling guide for infrastructure setup Direct Registration On-/Offline manual on Ubuntu 24.04.
+    """
+    distro = "Ubuntu 24.04"
+    run_test(distro, tdx_enabling_guide_infrastructure_page, infrastructure_setup_direct_registration_offline_manual_commands)
+

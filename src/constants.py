@@ -20,8 +20,8 @@ canonical_repo = "https://github.com/canonical/tdx.git"
 canonical_readme_path = "workspace/tdx/README.md"
 
 # Repository details for SIG CentOS TDX
-sig_centos_repo = "https://gitlab.com/CentOS/virt/docs.git"
-sig_centos_branch = "main"
+sig_centos_repo = "https://gitlab.com/adarshan-intel/docs.git"
+sig_centos_branch = "adarsh/sigcentos-fixes"
 sig_centos_host_os_path = 'workspace/docs/docs/tdx/host.md'
 sig_centos_guest_os_path = 'workspace/docs/docs/tdx/guest.md'
 
@@ -48,7 +48,12 @@ tdx_guide_install_qgs = "Install the QGS:"
 sig_tdx_package = "Virt SIG TDX package"
 sig_install_tdx = "Install the TDX host packages"
 start_libvirt_service = "Start libvirtd service"
-sig_host = [sig_tdx_package, sig_install_tdx, start_libvirt_service]
+sig_running_kernel_version = "Running kernel version:`uname -r`" # Here the verifier string is actually is a command which will be executed and the output will be verified.
+sig_tdx_enabled = "TDX is enabled:BIOS enabled\: private KeyID range [64, 128)"
+sig_reload_kvm_intel_module = "Reload kvm_intel module:"
+sig_tdx_initialized = "TDX is initialized:module initialized"
+sig_host = [sig_tdx_package, sig_install_tdx, start_libvirt_service, sig_running_kernel_version, 
+            sig_tdx_enabled, sig_reload_kvm_intel_module, sig_tdx_initialized]
 
 # Canonical Ubuntu 24.04 Host OS page commands
 # This is a page linked to the main host OS page and hence the commands are in a list.

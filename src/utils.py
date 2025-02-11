@@ -295,6 +295,8 @@ def run_test(distro, page, commands_dict):
                     print("Command %s output %s" %(command, output))
                 if verifier_string != "":
                     print(f"Verifier string {verifier_string}")
+                    if verifier_string.startswith("`"):
+                        verifier_string = run_subprocess(verifier_string.strip("`"), workspace_path)
                     if verifier_string not in output:
                         assert False, f"Verification failed for {command.strip()}"
                 else:

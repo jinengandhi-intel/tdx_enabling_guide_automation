@@ -11,6 +11,32 @@ from src.constants import *
 import subprocess
 from urllib.parse import urlparse
 
+def configure_libvirt_conf_file(file_path):
+
+    user_replacement_text = 'root'
+    group_replacement_text = 'root'
+    ownership_replacement_text = 'dynamic_ownership = 0 \n'
+    with open(file_path, 'r') as file:
+        lines = file.readlines()
+
+    updated_lines = []
+    for line in lines:
+        if line.startswith('user = '):
+            # Replace text within double quotes
+            updated_line = re.sub(r'"[^"]*"', f'"{user_replacement_text}"', line)
+            updated_lines.append(updated_line)
+        elif line.startswith('group = '):
+            # Replace text within double quotes
+            updated_line = re.sub(r'"[^"]*"', f'"{group_replacement_text}"', line)
+            updated_lines.append(updated_line)
+        elif line.startswith('dynamic_ownership = '):
+            updated_lines.append(ownership_replacement_text)
+        else:
+            updated_lines.append(line)
+
+    with open(file_path, 'w') as file:
+        file.writelines(updated_lines)
+
 def checkout_repo(repo_url, branch_name):
     """
     Clone the specified repository and checkout the specified branch.
@@ -86,10 +112,42 @@ def extract_code_block_from_sh(file_path, start_marker, end_marker):
         return match.group(1).strip()
     else:
         return None
+
 def replace_substrings(command, replacements):
     for old, new in replacements.items():
         command = command.replace(old, new)
     return command
+
+def cleanup_qemu_processes():
+    command = "ps -ax | grep qemu -m1 |  grep -v grep | awk '{print $1}'"
+    print("Starting Process %s from %s" %(command, os.getcwd()))
+    process = subprocess.run(command, stdout=subprocess.PIPE, stderr=subprocess.PIPE,
+                                universal_newlines=True, shell=True, timeout=20)
+    if process.returncode != 0:
+        print(process.stderr.strip())
+        raise Exception("Failed to run command {}".format(command))
+    if process.stdout != "":
+        qemu_pid = process.stdout.split('\n')
+        for pid in qemu_pid:
+            if pid != "":
+                run_subprocess(f"kill -9 {pid}")
+
+def cleanup_libvirt_processes():
+    command = "sudo virsh list --all | grep tdvirsh | awk '{print $2}'"
+    print("Starting Process %s from %s" %(command, os.getcwd()))
+    process = subprocess.run(command, stdout=subprocess.PIPE, stderr=subprocess.PIPE,
+                                universal_newlines=True, shell=True, timeout=20)
+    if process.returncode != 0:
+        print(process.stderr.strip())
+        raise Exception("Failed to run command {}".format(command))
+    if process.stdout != "":
+        clean_libvirt = process.stdout.split('\n')
+        for vm in clean_libvirt:
+            if vm != "":
+                vm_state = run_subprocess(f"sudo virsh domstate {vm}")
+                if vm_state == "running":
+                    run_subprocess(f"sudo virsh destroy {vm}")
+                run_subprocess(f"sudo virsh undefine {vm}")
 
 def run_subprocess(command, dest_dir=None, timeout=1200):
     """
@@ -106,11 +164,18 @@ def run_subprocess(command, dest_dir=None, timeout=1200):
     Raises:
         Exception: If the command fails.
     """
+    if "run_td.sh" in command or "tdvirsh" in command:
+        cleanup_qemu_processes()
+        cleanup_libvirt_processes()
+    
     if dest_dir:
         os.chdir(dest_dir)
+
     replacements = {
         "<hostname>": "sdp",
-        "24.10": "24.04"
+        "24.10": "24.04",
+        "./setup-tdx-host.sh": "-E ./setup-tdx-host.sh",
+        "./create-td-image.sh": "-E ./create-td-image.sh"
     }
     modified_command = replace_substrings(command, replacements)
     if "\\" in modified_command:
@@ -273,6 +338,19 @@ def extract_commands_from_link(markdown_string, distro, url, markdown_type):
             print(f"Command: {cleaned_text.strip()}\n")
     return command_verifier_strings
 
+def verifier_function(output, verifier_string, command):
+    if output != "":
+        print("Command %s output %s" %(command, output))
+    if verifier_string != "":
+        print(f"Verifier string {verifier_string}")
+        if verifier_string.startswith("`"):
+            verifier_string = run_subprocess(verifier_string.strip("`"), workspace_path)
+        if verifier_string not in output:
+            assert False, f"Verification failed for {command.strip()}. Output doesn't match verifier string."
+    else:
+        if "error" in output or "Error" in output:
+            assert False, f"Verification failed for {command.strip()}. Output contains keyword error."
+
 def run_test(distro, page, commands_dict):
     """
     Run the test for the given distribution and page.
@@ -297,17 +375,7 @@ def run_test(distro, page, commands_dict):
             for command, verifier_string in command_verifier_strings.items():
                 print(f"Extracted Command from url: {command}")
                 output = run_subprocess(command, workspace_path)
-                if output != "":
-                    print("Command %s output %s" %(command, output))
-                if verifier_string != "":
-                    print(f"Verifier string {verifier_string}")
-                    if verifier_string.startswith("`"):
-                        verifier_string = run_subprocess(verifier_string.strip("`"), workspace_path)
-                    if verifier_string not in output:
-                        assert False, f"Verification failed for {command.strip()}. Output doesn't match verifier string."
-                else:
-                    if "error" in output or "Error" in output:
-                        assert False, f"Verification failed for {command.strip()}. Output contains keyword error."
+                verifier_function(output, verifier_string, command)
         else:
             verifier_string = markdown_string.split(":")[1]
             markdown_string = markdown_string.split(":")[0]
@@ -327,14 +395,5 @@ def run_test(distro, page, commands_dict):
             print(f"#########\nMarkdown string: {markdown_string}")
             print(f"Command: {command.strip()}\n")
             output = run_subprocess(command.strip())
-            if output != "":
-                print("Command %s output %s" %(command, output))
-            if verifier_string != "":
-                print(f"Verifier string {verifier_string}")
-                if verifier_string.startswith("`"):
-                    verifier_string = run_subprocess(verifier_string.strip("`"), workspace_path)
-                if verifier_string not in output:
-                    assert False, f"Verification failed for {command.strip()}. Output doesn't match verifier string."
-            else:
-                if "error" in output or "Error" in output:
-                    assert False, f"Verification failed for {command.strip()}. Output contains keyword error."
+            verifier_function(output, verifier_string, command)
+            

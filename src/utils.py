@@ -170,12 +170,23 @@ def run_subprocess(command, dest_dir=None, timeout=1200):
     
     if dest_dir:
         os.chdir(dest_dir)
-
+    
+    hostname_cmd = "hostname"
+    print("Starting Process %s from %s" %(hostname_cmd, os.getcwd()))
+    process = subprocess.run(hostname_cmd, stdout=subprocess.PIPE, stderr=subprocess.PIPE,
+                                universal_newlines=True, shell=True, timeout=20)
+    hostname = process.stdout.strip()
     replacements = {
-        "<hostname>": "sdp",
+        "<hostname>": hostname,
         "24.10": "24.04",
         "./setup-tdx-host.sh": "-E ./setup-tdx-host.sh",
-        "./create-td-image.sh": "-E ./create-td-image.sh"
+        "./create-td-image.sh": "-E ./create-td-image.sh",
+        "api.trustedservices": "sbx.api.trustedservices",
+        "YOUR_PCCS_URL": "localhost",
+        "YOUR_PCCS_PORT": "8081",
+        "YOUR_USER_TOKEN": "intel@123",
+        "YOUR_PROXY_TYPE": "default",
+        "-use_secure_cert true": "-use_secure_cert false"
     }
     modified_command = replace_substrings(command, replacements)
     if "\\" in modified_command:

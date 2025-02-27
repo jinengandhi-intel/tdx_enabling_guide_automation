@@ -17,6 +17,10 @@ def setup():
     os.mkdir(workspace_path)
     #checkout_repo(tdx_enabling_repo, tdx_enabling_repo_branch)
     os.system("cp -rf /home/sdp/jinen/applications.security.confidential-computing.tdx.documentation /home/sdp/jinen/tdx_enabling_guide_automation/workspace")
+    print("Preparing a clean system for testing...")
+    os.system("sudo apt autoremove --yes sgx-ra-service sgx-pck-id-retrieval-tool")
+    os.system("sudo rm -rf /opt/intel/sgx-ra-service /opt/intel/sgx-pck-id-retrieval-tool")
+
 
 def test_tdx_enabling_guide_host_setup_ubuntu24_04():
     """
@@ -59,4 +63,11 @@ def test_tdx_enabling_infrastructure_setup_direct_registration_on_offline_manual
     """
     distro = "Ubuntu 24.04"
     run_test(distro, tdx_enabling_guide_infrastructure_page, infrastructure_setup_direct_registration_offline_manual_commands)
+
+def test_tdx_enabling_infrastructure_setup_indirect_registration_online_manual_ubuntu24_04():
+    """
+    Test the TDX enabling guide for infrastructure setup Indirect Registration Online manual on Ubuntu 24.04.
+    """
+    distro = "Ubuntu 24.04"
+    run_test(distro, tdx_enabling_guide_infrastructure_page, infrastructure_setup_indirect_registration_online_manual_commands)
 

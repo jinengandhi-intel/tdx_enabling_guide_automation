@@ -128,10 +128,11 @@ tdx_guide_verify_pccs = "verify PCCS:" # To-Do need to figure out verification l
 tdx_guide_install_mpa = "Install MPA:"
 tdx_guide_verify_mpa_registration = "successful MPA-based registration:PLATFORM_ESTABLISHMENT or TCB_RECOVERY passed successfully"
 tdx_guide_install_pckid_package = "Install PCKCIDRT:"
-tdx_guide_execute_pckid_package = "retrieved from a package repository:"
-tdx_guide_execute_pckid_standalone_package = "retrieved from a package repository:csv has been generated successfully!"
+tdx_guide_execute_pckid_package = "retrieved from a package repository:csv has been generated successfully!"
+tdx_guide_execute_pckid_standalone_package = "retrieved from a standalone package:csv has been generated successfully!"
 tdx_guide_extract_pm = "commands to extract the PM:"
 tdx_guide_send_pm_to_pccs = "REST API endpoint of the IRS:"
+tdx_guide_indirect_registration_pckid = "trigger the Indirect Registration with the PCKCIDRT:the data has been sent to cache server successfully!"
 
 # Infrastructure setup Online Automatic dictionary
 # Format:- search_string:command_type
@@ -153,5 +154,10 @@ infrastructure_setup_direct_registration_mpa_commands = {tdx_guide_setup_pccs : 
 #   read_from_other_file - The command is read from another file
 infrastructure_setup_direct_registration_offline_manual_commands = {tdx_guide_setup_pccs : "read_from_other_file", tdx_guide_install_pccs : "multi_distro", 
                                                                     tdx_guide_verify_pccs : "single_command", tdx_guide_install_pckid_package : "multi_distro", 
-                                                                    tdx_guide_execute_pckid_package : "multi_distro", tdx_guide_execute_pckid_standalone_package : "multi_distro", 
+                                                                    tdx_guide_execute_pckid_package : "multi_distro", 
                                                                     tdx_guide_extract_pm : "multi_distro", tdx_guide_send_pm_to_pccs : "multi_distro"}
+
+infrastructure_setup_indirect_registration_online_manual_commands = {tdx_guide_setup_pccs : "read_from_other_file", tdx_guide_install_pccs : "multi_distro",
+                                                                     tdx_guide_verify_pccs : "single_command", tdx_guide_install_pckid_package : "multi_distro",
+                                                                     tdx_guide_execute_pckid_package : "multi_distro",
+                                                                     tdx_guide_indirect_registration_pckid : "multi_distro"}

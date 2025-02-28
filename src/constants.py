@@ -15,6 +15,7 @@ tdx_enabling_guide_prerequisites = 'workspace/applications.security.confidential
 tdx_enabling_guide_introduction = 'workspace/applications.security.confidential-computing.tdx.documentation/docs/child_docs/intel-tdx-enabling-guide/docs/01/introduction.md'
 tdx_enabling_guide_sgx_setup_script = 'workspace/applications.security.confidential-computing.tdx.documentation/docs/child_docs/intel-tdx-enabling-guide/docs/code/sgx_repo_setup.sh'
 tdx_enabling_guide_infrastructure_page = 'workspace/applications.security.confidential-computing.tdx.documentation/docs/child_docs/intel-tdx-enabling-guide/docs/02/infrastructure_setup.md'
+tdx_enabling_guide_trust_domain_page = 'workspace/applications.security.confidential-computing.tdx.documentation/docs/child_docs/intel-tdx-enabling-guide/docs/07/trust_domain_at_runtime.md'
 
 # Repository details for Canonical TDX
 canonical_repo = "https://github.com/canonical/tdx.git"
@@ -134,6 +135,36 @@ tdx_guide_extract_pm = "commands to extract the PM:"
 tdx_guide_send_pm_to_pccs = "REST API endpoint of the IRS:"
 tdx_guide_indirect_registration_pckid = "trigger the Indirect Registration with the PCKCIDRT:the data has been sent to cache server successfully!"
 
+# TDX Enabling Guide Trust Domain page commands
+exec_in_guest_configure_td_to_qgs = "defining the vsock port:"
+exec_in_guest_generate_td_quote = "sample application generating a TD Quote:"
+exec_in_guest_intel_sgx_package = "Intel SGX package repository:"
+guest_script_path = os.path.join(workspace_path,'guest_script.sh')
+
+proxy_commands = f'''echo -e "Acquire::http::proxy \\"http://proxy-iind.intel.com:911\\";\nAcquire::https::proxy \\"http://proxy-iind.intel.com:912\\";" > /etc/apt/apt.conf.d/tdx_proxy
+export http_proxy="http://proxy-iind.intel.com:911"
+export https_proxy="http://proxy-iind.intel.com:912"'''
+
+repo_clone_command = f"git clone -b noble-24.04 https://github.com/canonical/tdx.git {workspace_path}/tdx"
+create_td_image = f'''cd {workspace_path}/tdx/guest-tools/image/
+sudo ./create-td-image.sh -v 24.04'''
+run_td_qemu = f'''cd {workspace_path}/tdx/guest-tools
+./run_td.sh'''
+update_known_hosts = f"sudo ssh-keygen -f '/root/.ssh/known_hosts' -R '[localhost]:10022'"
+copy_script_to_guest = f"sudo sshpass -p 123456 scp -o StrictHostKeyChecking=no -P 10022 {guest_script_path} root@localhost:/root/"
+launch_td_qemu = f'sudo sshpass -p 123456 ssh -T -o StrictHostKeyChecking=no -p 10022 root@localhost "bash /root/guest_script.sh"'
+copy_quote_to_host = f"sudo sshpass -p 123456 scp -o StrictHostKeyChecking=no -P 10022 root@localhost:/opt/intel/tdx-quote-generation-sample/quote.dat ~/quote.dat"
+tdx_guide_quote_verification = "install the dependencies for the [Quote Verification Sample]:"
+
+guest_script_commands = {exec_in_guest_configure_td_to_qgs : "single_command", exec_in_guest_intel_sgx_package: "read_from_other_file",
+                          exec_in_guest_generate_td_quote: "multi_distro"}
+
+trust_domain_setup_commands = {repo_clone_command: "exec_command", create_td_image: "exec_command", run_td_qemu: "exec_command", 
+                               update_known_hosts: "exec_command", copy_script_to_guest: "exec_command", launch_td_qemu: "exec_command",
+                               copy_quote_to_host: "exec_command", tdx_guide_quote_verification: "multi_distro"}
+
+
+
 # Infrastructure setup Online Automatic dictionary
 # Format:- search_string:command_type
 #   Command type can be single_command, multi_distro, link, or read_from_other_file
@@ -159,5 +190,4 @@ infrastructure_setup_direct_registration_offline_manual_commands = {tdx_guide_se
 
 infrastructure_setup_indirect_registration_online_manual_commands = {tdx_guide_setup_pccs : "read_from_other_file", tdx_guide_install_pccs : "multi_distro",
                                                                      tdx_guide_verify_pccs : "single_command", tdx_guide_install_pckid_package : "multi_distro",
-                                                                     tdx_guide_execute_pckid_package : "multi_distro",
-                                                                     tdx_guide_indirect_registration_pckid : "multi_distro"}
+                                                                     tdx_guide_execute_pckid_package : "multi_distro", tdx_guide_indirect_registration_pckid : "multi_distro"}

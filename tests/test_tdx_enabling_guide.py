@@ -63,6 +63,7 @@ def test_tdx_enabling_infrastructure_setup_direct_registration_on_offline_manual
     """
     distro = "Ubuntu 24.04"
     run_test(distro, tdx_enabling_guide_infrastructure_page, infrastructure_setup_direct_registration_offline_manual_commands)
+    verify_attestation(distro, tdx_enabling_guide_trust_domain_page, trust_domain_setup_commands)
 
 def test_tdx_enabling_infrastructure_setup_indirect_registration_online_manual_ubuntu24_04():
     """
@@ -70,4 +71,5 @@ def test_tdx_enabling_infrastructure_setup_indirect_registration_online_manual_u
     """
     distro = "Ubuntu 24.04"
     run_test(distro, tdx_enabling_guide_infrastructure_page, infrastructure_setup_indirect_registration_online_manual_commands)
+    verify_attestation(distro, tdx_enabling_guide_trust_domain_page, trust_domain_setup_commands)
 

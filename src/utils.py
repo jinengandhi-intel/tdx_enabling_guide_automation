@@ -130,7 +130,9 @@ def cleanup_qemu_processes():
         qemu_pid = process.stdout.split('\n')
         for pid in qemu_pid:
             if pid != "":
-                run_subprocess(f"kill -9 {pid}")
+                process = subprocess.run(f"kill -9 {pid}", stdout=subprocess.PIPE, stderr=subprocess.PIPE,
+                                universal_newlines=True, shell=True, timeout=20)
+                print(f"Killing QEMU process {process.stdout.strip()}")
 
 def cleanup_libvirt_processes():
     command = "sudo virsh list --all | grep tdvirsh | awk '{print $2}'"
@@ -144,10 +146,15 @@ def cleanup_libvirt_processes():
         clean_libvirt = process.stdout.split('\n')
         for vm in clean_libvirt:
             if vm != "":
-                vm_state = run_subprocess(f"sudo virsh domstate {vm}")
-                if vm_state == "running":
-                    run_subprocess(f"sudo virsh destroy {vm}")
-                run_subprocess(f"sudo virsh undefine {vm}")
+                vm_state = subprocess.run(f"sudo virsh domstate {vm}", stdout=subprocess.PIPE, stderr=subprocess.PIPE,
+                                universal_newlines=True, shell=True, timeout=20)
+                if vm_state.stdout == "running":
+                    vm_destroy = subprocess.run(f"sudo virsh destroy {vm}", stdout=subprocess.PIPE, stderr=subprocess.PIPE,
+                                universal_newlines=True, shell=True, timeout=20)
+                    print(f"Destroying VM {vm_destroy.stdout.strip()}")
+                vm_undefine = subprocess.run(f"sudo virsh undefine {vm}", stdout=subprocess.PIPE, stderr=subprocess.PIPE,
+                                universal_newlines=True, shell=True, timeout=20)
+                print(f"Undefining VM {vm_undefine.stdout.strip()}")
 
 def run_subprocess(command, dest_dir=None, timeout=1200):
     """
@@ -361,6 +368,49 @@ def verifier_function(output, verifier_string, command):
     else:
         if "error" in output or "Error" in output:
             assert False, f"Verification failed for {command.strip()}. Output contains keyword error."
+
+def verify_attestation(distro, page, commands_dict):
+    os.chdir(framework_path)
+    file_text = read_markdown_file(page)
+    guest_script_file = open(guest_script_path, 'w+')
+    guest_script_file.write(proxy_commands)
+    for markdown_string, markdown_type in guest_script_commands.items():
+        verifier_string = markdown_string.split(":")[1]
+        markdown_string = markdown_string.split(":")[0]
+        command = extract_code_blocks_after_text(file_text, markdown_string, markdown_type, distro)
+        pattern = re.compile(r'\{.*?\}')
+        command = pattern.sub('', command)
+        print(f"Command: {command.strip()}\n")
+        if markdown_type == "read_from_other_file":
+            sgx_distro = command.split(":")[1]
+            sgx_distro = sgx_distro.strip().strip('"')
+            print(f"SGX Distro: {sgx_distro}")
+            start_marker = f"# --8<-- [start:{sgx_distro}]"
+            end_marker = f"# --8<-- [end:{sgx_distro}]"
+            print(f"Start marker: {start_marker}")
+            print(f"End marker: {end_marker}")
+            command = extract_code_block_from_sh(tdx_enabling_guide_sgx_setup_script, start_marker, end_marker)
+        print(f"#########\nMarkdown string: {markdown_string}")
+        print(f"Command: {command.strip()}\n")
+        guest_script_file.write(command)
+    guest_script_file.close()
+
+    for markdown_string, markdown_type in commands_dict.items():
+        if markdown_type == "exec_command":
+            guest_script_output = run_subprocess(markdown_string.strip())
+        else:
+            verifier_string = markdown_string.split(":")[1]
+            markdown_string = markdown_string.split(":")[0]
+            command = extract_code_blocks_after_text(file_text, markdown_string, markdown_type, distro)
+            pattern = re.compile(r'\{.*?\}')
+            command = pattern.sub('', command)
+            print(f"Command: {command.strip()}\n")
+            output = run_subprocess(command.strip())
+            verifier_function(output, verifier_string, command)
+    # if "Wrote TD Quote to quote.dat" in guest_script_output:
+    #     print(f"Quote generation was successful.")
+    # else:
+    #     assert False, f"Verification for Quote Generation failed."
 
 def run_test(distro, page, commands_dict):
     """

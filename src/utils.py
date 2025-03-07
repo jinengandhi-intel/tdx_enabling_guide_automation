@@ -188,7 +188,7 @@ def run_subprocess(command, dest_dir=None, timeout=1200):
         "24.10": "24.04",
         "./setup-tdx-host.sh": "-E ./setup-tdx-host.sh",
         "./create-td-image.sh": "-E ./create-td-image.sh",
-        "api.trustedservices": "sbx.api.trustedservices",
+        #"api.trustedservices": "sbx.api.trustedservices",
         "YOUR_PCCS_URL": "localhost",
         "YOUR_PCCS_PORT": "8081",
         "YOUR_USER_TOKEN": "intel@123",

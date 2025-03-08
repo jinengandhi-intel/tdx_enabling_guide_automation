@@ -134,6 +134,15 @@ tdx_guide_execute_pckid_standalone_package = "retrieved from a standalone packag
 tdx_guide_extract_pm = "commands to extract the PM:"
 tdx_guide_send_pm_to_pccs = "REST API endpoint of the IRS:"
 tdx_guide_indirect_registration_pckid = "trigger the Indirect Registration with the PCKCIDRT:the data has been sent to cache server successfully!"
+tdx_guide_install_pccsadmin = "install prerequisites for the PCCS Admin Tool:"
+tdx_guide_merge_platform_csv_to_json = "command to trigger the merge of all individual:platform_list.json  saved successfully"
+tdx_guide_transmit_json_to_pccs_pccsadmin = "he input JSON file to the PCS using the PCCS Admin Tool:platform_collaterals.json  saved successfully."
+tdx_guide_insert_platform_collaterals = "execute the following command to insert the data from the:Collaterals uploaded successfully"
+tdx_guide_local_cache = "venv/bin/python ./pccsadmin.py cache:saved successfully"
+create_dcap_qncl_in_opt_qgsd = "sudo mkdir -p /var/opt/qgsd/.dcap-qcnl"
+copy_cache_file = "sudo cp -f ./cache/sdp/* /var/opt/qgsd/.dcap-qcnl/"
+echo_api_key_and_user_option = "115d3d4afdbe4331afb9817d68f87b0b\nn"
+echo_pccs_password_and_user_option = "intel@123\nn"
 
 # TDX Enabling Guide Trust Domain page commands
 exec_in_guest_configure_td_to_qgs = "defining the vsock port:"
@@ -154,7 +163,7 @@ update_known_hosts = f"sudo ssh-keygen -f '/root/.ssh/known_hosts' -R '[localhos
 copy_script_to_guest = f"sudo sshpass -p 123456 scp -o StrictHostKeyChecking=no -P 10022 {guest_script_path} root@localhost:/root/"
 launch_td_qemu = f'sudo sshpass -p 123456 ssh -T -o StrictHostKeyChecking=no -p 10022 root@localhost "bash /root/guest_script.sh"'
 copy_quote_to_host = f"sudo sshpass -p 123456 scp -o StrictHostKeyChecking=no -P 10022 root@localhost:/opt/intel/tdx-quote-generation-sample/quote.dat ~/quote.dat"
-tdx_guide_quote_verification = "install the dependencies for the [Quote Verification Sample]:"
+tdx_guide_quote_verification = "install the dependencies for the [Quote Verification Sample]:successfully returned"
 
 guest_script_commands = {exec_in_guest_configure_td_to_qgs : "single_command", exec_in_guest_intel_sgx_package: "read_from_other_file",
                           exec_in_guest_generate_td_quote: "multi_distro"}
@@ -191,3 +200,14 @@ infrastructure_setup_direct_registration_offline_manual_commands = {tdx_guide_se
 infrastructure_setup_indirect_registration_online_manual_commands = {tdx_guide_setup_pccs : "read_from_other_file", tdx_guide_install_pccs : "multi_distro",
                                                                      tdx_guide_verify_pccs : "single_command", tdx_guide_install_pckid_package : "multi_distro",
                                                                      tdx_guide_execute_pckid_package : "multi_distro", tdx_guide_indirect_registration_pckid : "multi_distro"}
+
+infrastructure_setup_indirect_registration_on_offline_pccs_based_commands = {tdx_guide_setup_pccs : "read_from_other_file", tdx_guide_install_pccs : "multi_distro",
+                                                                     tdx_guide_verify_pccs : "single_command", tdx_guide_install_pckid_package : "multi_distro",
+                                                                     tdx_guide_execute_pckid_package : "multi_distro", tdx_guide_install_pccsadmin : "multi_distro",
+                                                                     tdx_guide_merge_platform_csv_to_json : "multi_distro", tdx_guide_transmit_json_to_pccs_pccsadmin : "multi_distro",
+                                                                     tdx_guide_insert_platform_collaterals : "multi_distro"}
+
+infrastructure_setup_indirect_registration_on_offline_local_cache_based_commands = {tdx_guide_setup_pccs : "read_from_other_file", tdx_guide_install_pccs : "multi_distro",
+                                                                     tdx_guide_verify_pccs : "single_command", tdx_guide_install_pckid_package : "multi_distro",
+                                                                     tdx_guide_execute_pckid_package : "multi_distro", tdx_guide_install_pccsadmin : "multi_distro",
+                                                                     tdx_guide_merge_platform_csv_to_json : "multi_distro", tdx_guide_local_cache: "exec_command"}

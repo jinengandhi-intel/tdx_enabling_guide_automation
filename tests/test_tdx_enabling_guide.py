@@ -19,7 +19,7 @@ def setup():
     os.system(f"sudo cp -rf /home/sdp/jinen/applications.security.confidential-computing.tdx.documentation {workspace_path}")
     print("Preparing a clean system for testing...")
     os.system("sudo apt autoremove --yes sgx-ra-service sgx-pck-id-retrieval-tool")
-    os.system("sudo rm -rf /opt/intel/sgx-ra-service /opt/intel/sgx-pck-id-retrieval-tool")
+    os.system("sudo rm -rf /opt/intel/sgx-ra-service /opt/intel/sgx-pck-id-retrieval-tool /var/opt/qgsd/.dcap-qcnl")
     #checkout_repo(tdx_enabling_repo, tdx_enabling_repo_branch)
 
 def test_tdx_enabling_guide_host_setup_ubuntu24_04():
@@ -73,3 +73,18 @@ def test_tdx_enabling_infrastructure_setup_indirect_registration_online_manual_u
     run_test(distro, tdx_enabling_guide_infrastructure_page, infrastructure_setup_indirect_registration_online_manual_commands)
     verify_attestation(distro, tdx_enabling_guide_trust_domain_page, trust_domain_setup_commands)
 
+def test_tdx_enabling_infrastructure_setup_indirect_registration_on_offline_pccs_based_ubuntu24_04():
+    """
+    Test the TDX enabling guide for infrastructure setup Indirect Registration On-/Offline PCCS-based on Ubuntu 24.04.
+    """
+    distro = "Ubuntu 24.04"
+    run_test(distro, tdx_enabling_guide_infrastructure_page, infrastructure_setup_indirect_registration_on_offline_pccs_based_commands)
+    #verify_attestation(distro, tdx_enabling_guide_trust_domain_page, trust_domain_setup_commands)
+
+def test_tdx_enabling_infrastructure_setup_indirect_registration_on_offline_local_cache_based_ubuntu24_04():
+    """
+    Test the TDX enabling guide for infrastructure setup Indirect Registration On-/Offline Local Cache-based on Ubuntu 24.04.
+    """
+    distro = "Ubuntu 24.04"
+    run_test(distro, tdx_enabling_guide_infrastructure_page, infrastructure_setup_indirect_registration_on_offline_local_cache_based_commands)
+    #verify_attestation(distro, tdx_enabling_guide_trust_domain_page, trust_domain_setup_commands)

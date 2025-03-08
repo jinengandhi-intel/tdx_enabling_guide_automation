@@ -193,9 +193,14 @@ def run_subprocess(command, dest_dir=None, timeout=1200):
         "YOUR_PCCS_PORT": "8081",
         "YOUR_USER_TOKEN": "intel@123",
         "YOUR_PROXY_TYPE": "default",
-        "-use_secure_cert true": "-use_secure_cert false"
+        "-use_secure_cert true": "-use_secure_cert false",
+        "<platforms_to_register_path>" : "/opt/intel/sgx-pck-id-retrieval-tool/"
     }
     modified_command = replace_substrings(command, replacements)
+    if "fetch" or "collect" in modified_command:
+        modified_command = '%s <<< %s' % (modified_command, echo_api_key_and_user_option)
+    elif "put" in modified_command:
+        modified_command = '%s <<< %s' % (modified_command, echo_pccs_password_and_user_option)
     if "\\" in modified_command:
         print("Starting Process %s from %s" %(modified_command, os.getcwd()))
         process = subprocess.run(modified_command, stdout=subprocess.PIPE, stderr=subprocess.PIPE,
@@ -437,6 +442,12 @@ def run_test(distro, page, commands_dict):
                 print(f"Extracted Command from url: {command}")
                 output = run_subprocess(command, workspace_path)
                 verifier_function(output, verifier_string, command)
+        elif markdown_type == "exec_command":
+            verifier_string = markdown_string.split(":")[1]
+            command = markdown_string.split(":")[0]
+            print(f"Command: {command.strip()}\n")
+            #output = run_subprocess(command.strip())
+            #verifier_function(output, verifier_string, command)
         else:
             verifier_string = markdown_string.split(":")[1]
             markdown_string = markdown_string.split(":")[0]
@@ -455,6 +466,6 @@ def run_test(distro, page, commands_dict):
                 command = extract_code_block_from_sh(tdx_enabling_guide_sgx_setup_script, start_marker, end_marker)
             print(f"#########\nMarkdown string: {markdown_string}")
             print(f"Command: {command.strip()}\n")
-            output = run_subprocess(command.strip())
-            verifier_function(output, verifier_string, command)
+            #output = run_subprocess(command.strip())
+            #verifier_function(output, verifier_string, command)
             

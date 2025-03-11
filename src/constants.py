@@ -97,8 +97,7 @@ canonical_setup_host_os = [canonical_setup_host]
 host_setup_commands = {"tdx_guide_ubuntu24_04_setup_host tdx_guide_centos_stream9_setup_host" : "link", \
                         tdx_guide_module_initialized : "single_command", \
                         tdx_guide_install_msr_tools : "multi_distro", tdx_guide_intel_tme_enabled : "single_command", \
-                        tdx_guide_intel_tme_keys : "single_command", tdx_guide_sgx_mcheck_status : "single_command", \
-                        tdx_guide_tdx_status : "single_command", tdx_guide_intel_tdx_keys : "single_command", \
+                        tdx_guide_sgx_mcheck_status : "single_command", tdx_guide_tdx_status : "single_command", \
                         tdx_guide_intel_sgx_package: "read_from_other_file", tdx_guide_install_qgs : "multi_distro"}
 
 # TDX Enabling Guide Guest OS page commands

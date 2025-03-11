@@ -197,6 +197,8 @@ def run_subprocess(command, dest_dir=None, timeout=1200):
         modified_command = '%s <<< %s' % (modified_command, echo_api_key_and_user_option)
     elif "put" in modified_command:
         modified_command = '%s <<< %s' % (modified_command, echo_pccs_password_and_user_option)
+    elif "sgx-dcap-pccs" in modified_command:
+        modified_command = '%s < %s' % (modified_command, os.path.join(framework_path, "src", "pccs_config"))
     if "\\" in modified_command:
         print("Starting Process %s from %s" %(modified_command, os.getcwd()))
         process = subprocess.run(modified_command, stdout=subprocess.PIPE, stderr=subprocess.PIPE,
@@ -337,7 +339,6 @@ def extract_commands_from_link(markdown_string, distro, url, markdown_type):
             pattern = re.compile(r'\{.*?\}')
             cleaned_text = pattern.sub('', command).strip()
             print(f"#########\nMarkdown string: {markdown_string}")
-            print(f"Command: {cleaned_text.strip()}\n")
             command_verifier_strings[cleaned_text]=verifier_string
     else:
         checkout_repo(sig_centos_repo, sig_centos_branch)
@@ -354,7 +355,6 @@ def extract_commands_from_link(markdown_string, distro, url, markdown_type):
             pattern = re.compile(r'\{.*?\}')
             cleaned_text = pattern.sub('', command).strip()
             print(f"#########\nMarkdown string: {markdown_string}")
-            print(f"Command: {cleaned_text.strip()}\n")
     return command_verifier_strings
 
 def verifier_function(output, verifier_string, command):
@@ -381,7 +381,6 @@ def verify_attestation(distro, page, commands_dict):
         command = extract_code_blocks_after_text(file_text, markdown_string, markdown_type, distro)
         pattern = re.compile(r'\{.*?\}')
         command = pattern.sub('', command)
-        print(f"Command: {command.strip()}\n")
         if markdown_type == "read_from_other_file":
             sgx_distro = command.split(":")[1]
             sgx_distro = sgx_distro.strip().strip('"')
@@ -392,7 +391,6 @@ def verify_attestation(distro, page, commands_dict):
             print(f"End marker: {end_marker}")
             command = extract_code_block_from_sh(tdx_enabling_guide_sgx_setup_script, start_marker, end_marker)
         print(f"#########\nMarkdown string: {markdown_string}")
-        print(f"Command: {command.strip()}\n")
         guest_script_file.write(command)
     guest_script_file.close()
 
@@ -405,7 +403,6 @@ def verify_attestation(distro, page, commands_dict):
             command = extract_code_blocks_after_text(file_text, markdown_string, markdown_type, distro)
             pattern = re.compile(r'\{.*?\}')
             command = pattern.sub('', command)
-            print(f"Command: {command.strip()}\n")
             output = run_subprocess(command.strip())
             verifier_function(output, verifier_string, command)
     # if "Wrote TD Quote to quote.dat" in guest_script_output:
@@ -441,7 +438,6 @@ def run_test(distro, page, commands_dict):
         elif markdown_type == "exec_command":
             verifier_string = markdown_string.split(":")[1]
             command = markdown_string.split(":")[0]
-            print(f"Command: {command.strip()}\n")
             output = run_subprocess(command.strip())
             verifier_function(output, verifier_string, command)
         else:
@@ -450,7 +446,6 @@ def run_test(distro, page, commands_dict):
             command = extract_code_blocks_after_text(file_text, markdown_string, markdown_type, distro)
             pattern = re.compile(r'\{.*?\}')
             command = pattern.sub('', command)
-            print(f"Command: {command.strip()}\n")
             if markdown_type == "read_from_other_file":
                 sgx_distro = command.split(":")[1]
                 sgx_distro = sgx_distro.strip().strip('"')
@@ -461,7 +456,6 @@ def run_test(distro, page, commands_dict):
                 print(f"End marker: {end_marker}")
                 command = extract_code_block_from_sh(tdx_enabling_guide_sgx_setup_script, start_marker, end_marker)
             print(f"#########\nMarkdown string: {markdown_string}")
-            print(f"Command: {command.strip()}\n")
             output = run_subprocess(command.strip())
             verifier_function(output, verifier_string, command)
             

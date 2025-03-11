@@ -18,9 +18,14 @@ def setup():
     #checkout_repo(tdx_enabling_repo, tdx_enabling_repo_branch)
     os.system(f"sudo cp -rf /home/sdp/jinen/applications.security.confidential-computing.tdx.documentation {workspace_path}")
     print("Preparing a clean system for testing...")
-    os.system("sudo apt autoremove --yes sgx-ra-service sgx-pck-id-retrieval-tool")
-    os.system("sudo rm -rf /opt/intel/sgx-ra-service /opt/intel/sgx-pck-id-retrieval-tool /var/opt/qgsd/.dcap-qcnl")
+    os.system("sudo apt purge --yes sgx-ra-service sgx-pck-id-retrieval-tool tdx-qgs libsgx-dcap-ql sgx-dcap-pccs")
+    os.system("sudo rm -rf /opt/intel/sgx-ra-service /opt/intel/sgx-pck-id-retrieval-tool /var/opt/qgsd/ /opt/intel/sgx-dcap-pccs")
+    os.system("export no_proxy=localhost,127.0.0.1")
     #checkout_repo(tdx_enabling_repo, tdx_enabling_repo_branch)
+
+    distro = "Ubuntu 24.04"
+    run_test(distro, tdx_enabling_guide_host_os_page, host_setup_commands)
+    os.system(f"sudo rm -rf {workspace_path}/tdx")
 
 def test_tdx_enabling_guide_host_setup_ubuntu24_04():
     """

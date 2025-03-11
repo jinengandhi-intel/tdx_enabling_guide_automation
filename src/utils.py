@@ -177,18 +177,12 @@ def run_subprocess(command, dest_dir=None, timeout=1200):
     
     if dest_dir:
         os.chdir(dest_dir)
-    
-    hostname_cmd = "hostname"
-    print("Starting Process %s from %s" %(hostname_cmd, os.getcwd()))
-    process = subprocess.run(hostname_cmd, stdout=subprocess.PIPE, stderr=subprocess.PIPE,
-                                universal_newlines=True, shell=True, timeout=20)
-    hostname = process.stdout.strip()
+
     replacements = {
         "<hostname>": hostname,
         "24.10": "24.04",
         "./setup-tdx-host.sh": "-E ./setup-tdx-host.sh",
         "./create-td-image.sh": "-E ./create-td-image.sh",
-        "api.trustedservices": "sbx.api.trustedservices",
         "YOUR_PCCS_URL": "localhost",
         "YOUR_PCCS_PORT": "8081",
         "YOUR_USER_TOKEN": "intel@123",
@@ -197,6 +191,8 @@ def run_subprocess(command, dest_dir=None, timeout=1200):
         "<platforms_to_register_path>" : "/opt/intel/sgx-pck-id-retrieval-tool/"
     }
     modified_command = replace_substrings(command, replacements)
+    if production_system == False:
+        modified_command = modified_command.replace("api.trustedservices", "sbx.api.trustedservices")
     if "fetch" in modified_command or "collect" in modified_command:
         modified_command = '%s <<< %s' % (modified_command, echo_api_key_and_user_option)
     elif "put" in modified_command:
@@ -378,7 +374,7 @@ def verify_attestation(distro, page, commands_dict):
     os.chdir(framework_path)
     file_text = read_markdown_file(page)
     guest_script_file = open(guest_script_path, 'w+')
-    guest_script_file.write(proxy_commands)
+    #guest_script_file.write(proxy_commands)
     for markdown_string, markdown_type in guest_script_commands.items():
         verifier_string = markdown_string.split(":")[1]
         markdown_string = markdown_string.split(":")[0]

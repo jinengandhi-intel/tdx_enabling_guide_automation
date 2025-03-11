@@ -1,9 +1,34 @@
 import os
+import subprocess
 
 # Path to the framework directory
 framework_path = os.getcwd()
 # Path to the workspace directory
 workspace_path = os.path.join(framework_path, "workspace")
+
+command = "sudo rdmsr 0xCE -f 27:27"
+print("Starting Process %s from %s" %(command, os.getcwd()))
+process = subprocess.run(command, stdout=subprocess.PIPE, stderr=subprocess.PIPE,
+                                universal_newlines=True, shell=True, timeout=20)
+print(f"Hostname stdout {process.stdout.strip()}")
+if process.returncode != 0:
+    print(process.stderr.strip())
+    print("Setting default value as Production system")
+    production_system = True
+else:
+    if str(process.stdout.strip()) == "0":
+        production_system = True
+        print("This is a Production system")
+    else:
+        production_system = False
+        print("This is a Non-Production system")
+
+hostname_cmd = "hostname"
+print("Starting Process %s from %s" %(hostname_cmd, os.getcwd()))
+process = subprocess.run(hostname_cmd, stdout=subprocess.PIPE, stderr=subprocess.PIPE,
+                            universal_newlines=True, shell=True, timeout=20)
+hostname = process.stdout.strip()
+print(f"Hostname: {hostname}")
 
 # Repository details for TDX enabling guide
 tdx_enabling_repo = "https://github.com/intel-innersource/applications.security.confidential-computing.tdx.documentation.git"
@@ -128,6 +153,7 @@ tdx_guide_install_pccs = "Install PCCS:"
 tdx_guide_verify_pccs = "verify PCCS:" # To-Do need to figure out verification logic.
 tdx_guide_install_mpa = "Install MPA:"
 tdx_guide_verify_mpa_registration = "successful MPA-based registration:PLATFORM_ESTABLISHMENT or TCB_RECOVERY passed successfully"
+tdx_guide_add_noble_repo = "retrieve the PCKCIDRT:"
 tdx_guide_install_pckid_package = "Install PCKCIDRT:"
 tdx_guide_execute_pckid_package = "retrieved from a package repository:csv has been generated successfully!"
 tdx_guide_execute_pckid_standalone_package = "retrieved from a standalone package:csv has been generated successfully!"
@@ -193,21 +219,21 @@ infrastructure_setup_direct_registration_mpa_commands = {tdx_guide_setup_pccs : 
 #   link - The command is a link to another page
 #   read_from_other_file - The command is read from another file
 infrastructure_setup_direct_registration_offline_manual_commands = {tdx_guide_setup_pccs : "read_from_other_file", tdx_guide_install_pccs : "multi_distro", 
-                                                                    tdx_guide_verify_pccs : "single_command", tdx_guide_install_pckid_package : "multi_distro", 
-                                                                    tdx_guide_execute_pckid_package : "multi_distro", 
+                                                                    tdx_guide_verify_pccs : "single_command", tdx_guide_add_noble_repo: "read_from_other_file",
+                                                                    tdx_guide_install_pckid_package : "multi_distro", tdx_guide_execute_pckid_package : "multi_distro", 
                                                                     tdx_guide_extract_pm : "multi_distro", tdx_guide_send_pm_to_pccs : "multi_distro"}
 
 infrastructure_setup_indirect_registration_online_manual_commands = {tdx_guide_setup_pccs : "read_from_other_file", tdx_guide_install_pccs : "multi_distro",
-                                                                     tdx_guide_verify_pccs : "single_command", tdx_guide_install_pckid_package : "multi_distro",
+                                                                     tdx_guide_verify_pccs : "single_command", tdx_guide_add_noble_repo: "read_from_other_file", tdx_guide_install_pckid_package : "multi_distro",
                                                                      tdx_guide_execute_pckid_package : "multi_distro", tdx_guide_indirect_registration_pckid : "multi_distro"}
 
 infrastructure_setup_indirect_registration_on_offline_pccs_based_commands = {tdx_guide_setup_pccs : "read_from_other_file", tdx_guide_install_pccs : "multi_distro",
-                                                                     tdx_guide_verify_pccs : "single_command", tdx_guide_install_pckid_package : "multi_distro",
+                                                                     tdx_guide_verify_pccs : "single_command", tdx_guide_add_noble_repo: "read_from_other_file", tdx_guide_install_pckid_package : "multi_distro",
                                                                      tdx_guide_execute_pckid_package : "multi_distro", tdx_guide_install_pccsadmin : "multi_distro",
                                                                      tdx_guide_merge_platform_csv_to_json : "multi_distro", tdx_guide_transmit_json_to_pccs_pccsadmin : "multi_distro",
                                                                      tdx_guide_insert_platform_collaterals : "multi_distro"}
 
 infrastructure_setup_indirect_registration_on_offline_local_cache_based_commands = {tdx_guide_setup_pccs : "read_from_other_file", tdx_guide_install_pccs : "multi_distro",
-                                                                     tdx_guide_verify_pccs : "single_command", tdx_guide_install_pckid_package : "multi_distro",
+                                                                     tdx_guide_verify_pccs : "single_command", tdx_guide_add_noble_repo: "read_from_other_file", tdx_guide_install_pckid_package : "multi_distro",
                                                                      tdx_guide_execute_pckid_package : "multi_distro", tdx_guide_install_pccsadmin : "multi_distro",
                                                                      tdx_guide_merge_platform_csv_to_json : "multi_distro", tdx_guide_local_cache: "exec_command"}

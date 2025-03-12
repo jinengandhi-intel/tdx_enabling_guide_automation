@@ -1,34 +1,9 @@
 import os
-import subprocess
 
 # Path to the framework directory
 framework_path = os.getcwd()
 # Path to the workspace directory
 workspace_path = os.path.join(framework_path, "workspace")
-
-command = "sudo rdmsr 0xCE -f 27:27"
-print("Starting Process %s from %s" %(command, os.getcwd()))
-process = subprocess.run(command, stdout=subprocess.PIPE, stderr=subprocess.PIPE,
-                                universal_newlines=True, shell=True, timeout=20)
-print(f"Hostname stdout {process.stdout.strip()}")
-if process.returncode != 0:
-    print(process.stderr.strip())
-    print("Setting default value as Production system")
-    production_system = True
-else:
-    if str(process.stdout.strip()) == "0":
-        production_system = True
-        print("This is a Production system")
-    else:
-        production_system = False
-        print("This is a Non-Production system")
-
-hostname_cmd = "hostname"
-print("Starting Process %s from %s" %(hostname_cmd, os.getcwd()))
-process = subprocess.run(hostname_cmd, stdout=subprocess.PIPE, stderr=subprocess.PIPE,
-                            universal_newlines=True, shell=True, timeout=20)
-hostname = process.stdout.strip()
-print(f"Hostname: {hostname}")
 
 # Repository details for TDX enabling guide
 tdx_enabling_repo = "https://github.com/intel-innersource/applications.security.confidential-computing.tdx.documentation.git"

@@ -7,7 +7,7 @@ workspace_path = os.path.join(framework_path, "workspace")
 
 # Repository details for TDX enabling guide
 tdx_enabling_repo = "https://github.com/intel-innersource/applications.security.confidential-computing.tdx.documentation.git"
-tdx_enabling_repo_branch = "internal-main"
+tdx_enabling_repo_branch = "bfuhry/dcap_1.23"
 tdx_enabling_guide_host_os_page = 'workspace/applications.security.confidential-computing.tdx.documentation/docs/child_docs/intel-tdx-enabling-guide/docs/05/host_os_setup.md'
 tdx_enabling_guide_guest_os_page = 'workspace/applications.security.confidential-computing.tdx.documentation/docs/child_docs/intel-tdx-enabling-guide/docs/06/guest_os_setup.md'
 tdx_enabling_guide_hardware_requirements = 'workspace/applications.security.confidential-computing.tdx.documentation/docs/child_docs/intel-tdx-enabling-guide/docs/02/hardware_requirements.md'
@@ -69,11 +69,15 @@ canonical_setup_host_os = [canonical_setup_host]
 #   multi_distro - The command is different for different distros
 #   link - The command is a link to another page
 #   read_from_other_file - The command is read from another file
-host_setup_commands = {"tdx_guide_ubuntu24_04_setup_host tdx_guide_centos_stream9_setup_host" : "link", \
-                        tdx_guide_module_initialized : "single_command", \
-                        tdx_guide_install_msr_tools : "multi_distro", tdx_guide_intel_tme_enabled : "single_command", \
-                        tdx_guide_sgx_mcheck_status : "single_command", tdx_guide_tdx_status : "single_command", \
-                        tdx_guide_intel_sgx_package: "read_from_other_file", tdx_guide_install_qgs : "multi_distro"}
+
+#host_setup_commands = {"tdx_guide_ubuntu24_04_setup_host tdx_guide_centos_stream9_setup_host" : "link", \
+#                        tdx_guide_module_initialized : "single_command", \
+#                        tdx_guide_install_msr_tools : "multi_distro", tdx_guide_intel_tme_enabled : "single_command", \
+#                        tdx_guide_sgx_mcheck_status : "single_command", tdx_guide_tdx_status : "single_command", \
+#                        tdx_guide_intel_sgx_package: "read_from_other_file", tdx_guide_install_qgs : "multi_distro"}
+
+host_setup_commands = {"tdx_guide_ubuntu24_04_setup_host tdx_guide_centos_stream9_setup_host" : "link",
+                       tdx_guide_intel_sgx_package: "read_from_other_file", tdx_guide_install_qgs : "multi_distro"}
 
 # TDX Enabling Guide Guest OS page commands
 # Format:- search_string
@@ -139,8 +143,8 @@ tdx_guide_merge_platform_csv_to_json = "command to trigger the merge of all indi
 tdx_guide_transmit_json_to_pccs_pccsadmin = "he input JSON file to the PCS using the PCCS Admin Tool:platform_collaterals.json  saved successfully."
 tdx_guide_insert_platform_collaterals = "execute the following command to insert the data from the:Collaterals uploaded successfully"
 tdx_guide_local_cache = "venv/bin/python ./pccsadmin.py cache:saved successfully"
-create_dcap_qncl_in_opt_qgsd = "sudo mkdir -p /var/opt/qgsd/.dcap-qcnl"
-copy_cache_file = "sudo cp -f ./cache/sdp/* /var/opt/qgsd/.dcap-qcnl/"
+create_dcap_qncl_in_opt_qgsd = "sudo mkdir -p /var/opt/qgsd/.dcap-qcnl:"
+copy_cache_file = "sudo cp -f ./cache/host_sdp/* /var/opt/qgsd/.dcap-qcnl/:"
 echo_api_key_and_user_option = "115d3d4afdbe4331afb9817d68f87b0b\nn"
 echo_pccs_password_and_user_option = "intel@123\nn"
 
@@ -149,17 +153,24 @@ exec_in_guest_configure_td_to_qgs = "defining the vsock port:"
 exec_in_guest_generate_td_quote = "sample application generating a TD Quote:"
 exec_in_guest_intel_sgx_package = "Intel SGX package repository:"
 guest_script_path = os.path.join(workspace_path,'guest_script.sh')
+default_qcnl_conf_path = os.path.join(framework_path, "src", "sgx_default_qcnl_default.conf")
+cache_enabled_qcnl_conf_path = os.path.join(framework_path, "src", "sgx_default_qcnl_cache_enabled.conf")
+
+#pccs_admin_fetch_command = f"sudo expect -c 'spawn venv/bin/python ./pccsadmin.py fetch; expect \"prompt\"; send \"\r\"; expect \"prompt\"; send \"115d3d4afdbe4331afb9817d68f87b0b\n\r\"; expect \"prompt\"; send \"n\n\r\"; expect \"prompt\"; send \"n\n\r\"; interact'"
+#pccs_admin_put_command = f"sudo expect -c 'spawn venv/bin/python ./pccsadmin.py put; expect \"prompt\"; send \"intel@123\n\r\"; expect \"prompt\"; send \"n\n\r\"; interact'"
 
 proxy_commands = f'''echo -e "Acquire::http::proxy \\"http://proxy-iind.intel.com:911\\";\nAcquire::https::proxy \\"http://proxy-iind.intel.com:912\\";" > /etc/apt/apt.conf.d/tdx_proxy
 export http_proxy="http://proxy-iind.intel.com:911"
 export https_proxy="http://proxy-iind.intel.com:912"'''
 
-repo_clone_command = f"git clone -b noble-24.04 https://github.com/canonical/tdx.git {workspace_path}/tdx"
+repo_clone_command = f'''git clone https://github.com/canonical/tdx.git {workspace_path}/tdx
+cd {workspace_path}/tdx
+git checkout 3.0'''
 create_td_image = f'''cd {workspace_path}/tdx/guest-tools/image/
 sudo ./create-td-image.sh -v 24.04'''
 run_td_qemu = f'''cd {workspace_path}/tdx/guest-tools
 ./run_td.sh'''
-update_known_hosts = f"sudo ssh-keygen -f '/root/.ssh/known_hosts' -R '[localhost]:10022'"
+update_known_hosts = f"[ ! -f /root/.ssh/known_hosts ] || sudo ssh-keygen -f '/root/.ssh/known_hosts' -R '[localhost]:10022'"
 copy_script_to_guest = f"sudo sshpass -p 123456 scp -o StrictHostKeyChecking=no -P 10022 {guest_script_path} root@localhost:/root/"
 launch_td_qemu = f'sudo sshpass -p 123456 ssh -T -o StrictHostKeyChecking=no -p 10022 root@localhost "bash /root/guest_script.sh"'
 copy_quote_to_host = f"sudo sshpass -p 123456 scp -o StrictHostKeyChecking=no -P 10022 root@localhost:/opt/intel/tdx-quote-generation-sample/quote.dat ~/quote.dat"
@@ -210,4 +221,4 @@ infrastructure_setup_indirect_registration_on_offline_pccs_based_commands = {tdx
 infrastructure_setup_indirect_registration_on_offline_local_cache_based_commands = {tdx_guide_setup_pccs : "read_from_other_file", tdx_guide_install_pccs : "multi_distro",
                                                                      tdx_guide_verify_pccs : "single_command", tdx_guide_add_noble_repo: "read_from_other_file", tdx_guide_install_pckid_package : "multi_distro",
                                                                      tdx_guide_execute_pckid_package : "multi_distro", tdx_guide_install_pccsadmin : "multi_distro",
-                                                                     tdx_guide_merge_platform_csv_to_json : "multi_distro", tdx_guide_local_cache: "exec_command"}
+                                                                                    tdx_guide_merge_platform_csv_to_json : "multi_distro", tdx_guide_local_cache: "exec_command", create_dcap_qncl_in_opt_qgsd : "exec_command", copy_cache_file : "exec_command"}

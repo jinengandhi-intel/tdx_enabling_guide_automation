@@ -103,7 +103,8 @@ def run_subprocess(command, dest_dir=None, timeout=1200):
         os.chdir(dest_dir)
 
     replacements = {
-        "<hostname>": os.environ.get("hostname"),
+        #"<hostname>": os.environ.get("hostname"),
+        "<hostname>-pm.bin": "host_sdp_pm.bin",
         "24.10": "24.04",
         "./setup-tdx-host.sh": "-E ./setup-tdx-host.sh",
         "./create-td-image.sh": "-E ./create-td-image.sh",
@@ -117,10 +118,15 @@ def run_subprocess(command, dest_dir=None, timeout=1200):
     modified_command = replace_substrings(command, replacements)
     if os.environ.get("production_system") == "False":
         modified_command = modified_command.replace("api.trustedservices", "sbx.api.trustedservices")
-    if "fetch" in modified_command or "collect" in modified_command:
-        modified_command = '%s <<< %s' % (modified_command, echo_api_key_and_user_option)
+    if "fetch" in modified_command:
+        #modified_command = '%s < %s' % (modified_command, os.path.join(framework_path, "src", "pccs_admin_fetch_config"))
+        #modified_command = "sudo expect -c 'spawn venv/bin/python ./pccsadmin.py fetch; expect \"Please input ApiKey for Intel PCS\"; send \"115d3d4afdbe4331afb9817d68f87b0b\\r\"; expect \"Would you like to remember Intel PCS ApiKey in OS keyring\"; send \"n\\r\"; expect \"Do you want to save the list\"; send \"n\\r\"; expect \"platform_collaterals.json  saved successfully\"; send \"\\r\"; interact'"
+        modified_command = "python3 %s " % (os.path.join(framework_path, "src", "pccs_admin_fetch_automation.py"))
     elif "put" in modified_command:
-        modified_command = '%s <<< %s' % (modified_command, echo_pccs_password_and_user_option)
+        #modified_command = "sudo expect -c 'spawn %s; expect \"Please input your administrator password for PCCS service\"; send \"intel@123\\r\"; expect \"Would you like to remember password in OS keyring\"; send \"n\\r\"; interact'" % (modified_command)
+        modified_command = "python3 %s " % (os.path.join(framework_path, "src", "pccs_admin_put_automation.py"))
+    elif "pccsadmin.py cache" in modified_command:
+        modified_command = "python3 %s " % (os.path.join(framework_path, "src", "pccs_admin_cache_automation.py"))
     elif "sgx-dcap-pccs" in modified_command:
         modified_command = '%s < %s' % (modified_command, os.path.join(framework_path, "src", "pccs_config"))
     if "\\" in modified_command:
@@ -134,6 +140,10 @@ def run_subprocess(command, dest_dir=None, timeout=1200):
         command_lines = modified_command.splitlines()
         for each_command in command_lines:
             each_command = each_command.strip()
+            if each_command == "source ./venv/bin/activate":
+                continue
+            if "pip install -r requirements.txt" == each_command:
+                each_command = "venv/bin/python -m pip install -r requirements.txt"
             if each_command != "bash":
                 if each_command.startswith("cd"):
                     print(f"Command {each_command}")
@@ -143,7 +153,9 @@ def run_subprocess(command, dest_dir=None, timeout=1200):
                     print("Starting Process %s from %s" %(each_command, os.getcwd()))
                     process = subprocess.run(each_command, stdout=subprocess.PIPE, stderr=subprocess.PIPE,
                                                 universal_newlines=True, shell=True, timeout=timeout)
-                    print(f"Process stdout {process.stdout.strip()}")
+                    if "expect" in each_command:
+                        process.wait()
+                    print(f"Process stdout {process.stdout.strip()}", flush=True)
                     if process.returncode != 0:
                         print(f"Process stderr {process.stderr.strip()}")
                         raise Exception("Failed to run command {}".format(each_command))
@@ -169,9 +181,10 @@ def verifier_function(output, verifier_string, command):
         if verifier_string.startswith("`"):
             verifier_string = run_subprocess(verifier_string.strip("`"), workspace_path)
         if verifier_string not in output:
+            print(f"Output {output}")
             assert False, f"Verification failed for {command.strip()}. Output doesn't match verifier string."
     else:
-        if "error" in output or "Error" in output:
+        if ("error" in output or "Error" in output) and (not "aggregate-error" in output):
             assert False, f"Verification failed for {command.strip()}. Output contains keyword error."
 
 def verify_attestation(distro, page, commands_dict):

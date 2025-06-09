@@ -2,6 +2,7 @@ import pytest
 from src.constants import *
 from src.dmr_main import *
 import shutil
+import sys
 
 @pytest.fixture(scope="function", autouse=True)
 def setup(request):
@@ -19,17 +20,23 @@ def setup(request):
     check_hostname()
     os.system(f"sudo cp -rf /home/sdp/jinen/applications.security.confidential-computing.tdx.documentation {workspace_path}")
     print("Preparing a clean system for testing...")
-    if "direct_registration_online_automatic_ubuntu24_04" not in test_name:
-        os.system("sudo apt purge --yes sgx-ra-service sgx-pck-id-retrieval-tool tdx-qgs libsgx-dcap-ql sgx-dcap-pccs")
-        os.system("sudo rm -rf /opt/intel/sgx-ra-service /opt/intel/sgx-pck-id-retrieval-tool /var/opt/qgsd/ /opt/intel/sgx-dcap-pccs")
+    if "infrastructure_setup" in test_name:
+        os.system("sudo apt purge --yes sgx-ra-service sgx-pck-id-retrieval-tool tdx-qgs libsgx-dcap-ql")
+        os.system("sudo rm -rf /opt/intel/sgx-ra-service /opt/intel/sgx-pck-id-retrieval-tool /var/opt/qgsd/")
         os.system("export no_proxy=localhost,127.0.0.1")
-        if "infrastructure_setup" in test_name:
-            if "ubuntu24_04" in test_name:
-                distro = "Ubuntu 24.04"
-            else:
-                distro = "CentOS 9"
-            run_test(distro, tdx_enabling_guide_host_os_page, host_setup_commands)
-            os.system(f"sudo rm -rf {workspace_path}/tdx")
+        if "ubuntu24_04" in test_name:
+            distro = "Ubuntu 24.04"
+        else:
+            distro = "CentOS 9"
+        run_test(distro, tdx_enabling_guide_host_os_page, host_setup_commands)
+        os.system(f"sudo rm -rf {workspace_path}/tdx")
+        if "cache" in test_name:
+            os.system("sudo cp -f %s /etc/sgx_default_qcnl.conf" % (cache_enabled_qcnl_conf_path))
+        else:
+            os.system("sudo cp -f %s /etc/sgx_default_qcnl.conf" % (default_qcnl_conf_path))
+        os.system("sudo systemctl restart qgsd")
+            
+    #sys.exit(0)
 
 def check_production_system():
     """
